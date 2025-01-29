@@ -101,23 +101,15 @@ document.getElementById('updateForm').addEventListener('submit', async function(
   }
 
   // Get CSRF token for the request
-  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  const csrfToken = getCookie('csrftoken');  // Assuming csrf token is stored in a cookie named "csrftoken"
+  if (!csrfToken) {
+    alert('CSRF token not found.');
+    return;
+  }
 
   // Retrieve the user ID from the template
   const userId = '{{ user.id }}';  // Ensure this is correctly rendered in your Django template
   console.log('User ID:', userId);  // Verify if the user ID is correct
-
-  // Extract the session ID from the document.cookie (session cookie)
-  const getSessionIdFromCookies = () => {
-    const match = document.cookie.match('(^|;)\\s*' + 'sessionid' + '\\s*=\\s*([^;]+)');
-    return match ? match[2] : null;
-  };
-
-  const sessionId = getSessionIdFromCookies();
-  if (!sessionId) {
-    alert('Session ID not found. Please ensure you are logged in.');
-    return;
-  }
 
   try {
     const response = await fetch(`/accounts/api/update/${userId}/`, {
@@ -126,13 +118,13 @@ document.getElementById('updateForm').addEventListener('submit', async function(
         'Content-Type': 'application/json',
         'Authorization': `Token ${token}`,  // Sending the token in the Authorization header
         'X-CSRFToken': csrfToken,  // CSRF token added to the request headers
-        'Session-ID': sessionId  // Adding the session ID in the headers
       },
+      credentials: 'include',  // Include cookies (sessionid, csrf token) in the request
       body: JSON.stringify({
         first_name: firstName,
         last_name: lastName,
         email: email,
-        password: password,  // Include the password if you want to allow users to change it
+        password: password,
         mobile_num: mobileNum
       }),
     });
@@ -158,6 +150,14 @@ document.getElementById('updateForm').addEventListener('submit', async function(
     alert('An error occurred while updating the profile.');
   }
 });
+
+// Function to extract a specific cookie by name
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
 
 </script>
 
