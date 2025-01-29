@@ -138,7 +138,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES' : ('knox.auth.TokenAuthentication',),
+    'DEFAULT_AUTHENTICATION_CLASSES' : ('knox.auth.TokenAuthentication',
+                                        'rest_framework.authentication.SessionAuthentication',),
 }
 
 REST_KNOX = {
@@ -181,6 +182,3 @@ CSRF_COOKIE_SECURE = True
 # Set SameSite policy for CSRF and session cookies to prevent CSRF attacks
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SAMESITE = 'Lax'
-
-# For secure cookies to work, ensure you're using HTTPS in production
-SECURE_SSL_REDIRECT = True
