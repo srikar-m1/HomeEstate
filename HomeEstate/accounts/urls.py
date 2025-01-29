@@ -18,7 +18,7 @@ urlpatterns = [
     path('logoutAll/', LogoutAllView.as_view(), name='logout-all-api'),  # POST to logout from all sessions
 
     # User profile update
-    path('api/update/<int:pk>/', views.UpdateUser.as_view(), name='update-user'),
+    path('api/update/<int:user_id>/', views.UpdateUser.as_view(), name='update-user'),
     path('update/', views.updateform, name='update-user-form'),  # Update user details
 
     # User details page (show user details)

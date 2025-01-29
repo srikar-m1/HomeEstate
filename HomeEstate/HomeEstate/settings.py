@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url
+from urllib.parse import urlparse
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'your-default-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'https://homeestate-fcx0.onrender.com', 'homeestate-fcx0.onrender.com']
 
@@ -77,10 +78,37 @@ WSGI_APPLICATION = 'HomeEstate.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+DATABASE_URL = "postgresql://db_django_app_render_user:S2wlUuTPLfemN4fdHGHmSBhX86Kbif6R@dpg-cu0hnlpopnds738qe4gg-a.oregon-postgres.render.com/db_django_app_render"
 
+url = urlparse(DATABASE_URL)
+
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'Realtor',
+#         'USER': 'postgres',
+#         'PASSWORD': '',
+#         'HOST': 'localhost',
+#         'PORT' : '5432'
+#     }
+# }
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': url.path[1:],  # Remove the leading '/' from the path (db_name)
+        'USER': url.username,
+        'PASSWORD': url.password,
+        'HOST': url.hostname,
+        'PORT': url.port or 5432,  # Default PostgreSQL port is 5432
+    }
 }
+
+
+# DATABASES = {
+#     'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+# }
 
 
 # Password validation
