@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'your-default-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'HomeEstate.onrender.com', 'https://homeestate-fcx0.onrender.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'https://homeestate-fcx0.onrender.com', 'homeestate-fcx0.onrender.com']
 
 
 # Application definition
