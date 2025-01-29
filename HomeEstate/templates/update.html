@@ -83,73 +83,81 @@
 
 <script>
     document.getElementById('updateForm').addEventListener('submit', async function(e) {
-      e.preventDefault();  // Prevent the form from submitting normally
+          e.preventDefault();  // Prevent form submission
 
-      console.log('Update function called');  // Debugging line
+          console.log('Update function called');  // Debugging line
 
-      const firstName = document.getElementById('first_name').value;
-      const lastName = document.getElementById('last_name').value;
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const mobileNum = document.getElementById('mobile_num').value;
+          const firstName = document.getElementById('first_name').value;
+          const lastName = document.getElementById('last_name').value;
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
+          const mobileNum = document.getElementById('mobile_num').value;
 
-      // Retrieve the CSRF token from the cookie
-      const csrfToken = getCookie('csrftoken');
-      if (!csrfToken) {
-        alert('CSRF token not found.');
-        return;
-      }
+          // Retrieve the CSRF token from the cookie
+          const csrfToken = getCookie('csrftoken');
+          if (!csrfToken) {
+            alert('CSRF token not found.');
+            return;
+          }
 
-      // Retrieve the user ID from the template
-      const userId = '{{ user.id }}';  // Ensure this is correctly rendered in your Django template
-      console.log('User ID:', userId);  // Verify if the user ID is correct
+          // Retrieve the session ID from the cookies (this is the default name in Django)
+          const sessionId = getCookie('sessionid');  // <-- Here we get the sessionid cookie
+          if (!sessionId) {
+            alert('Session ID not found.');
+            return;
+          }
 
-      try {
-        const response = await fetch(`/accounts/api/update/${userId}/`, {
-          method: 'PATCH',  // Use PATCH method to update the profile
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,  // CSRF token added to the request headers
-          },
-          credentials: 'include',  // Ensure session cookies (like sessionid) are included in the request
-          body: JSON.stringify({
-            first_name: firstName,
-            last_name: lastName,
-            email: email,
-            password: password,  // Include the password if you want to allow users to change it
-            mobile_num: mobileNum
-          }),
+          // Retrieve the user ID from the template (Django Template Variable)
+          const userId = '{{ user.id }}';  // Ensure this is correctly rendered in your Django template
+          console.log('User ID:', userId);  // Verify if the user ID is correct
+
+          try {
+            const response = await fetch(`/accounts/api/update/${userId}/`, {
+              method: 'PATCH',  // Use PATCH method to update the profile
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Session ${sessionId}`,  // Manually pass the session ID here
+                'X-CSRFToken': csrfToken,  // CSRF token for added security
+              },
+              credentials: 'include',  // Ensure session cookies (sessionid, csrftoken) are included in the request
+              body: JSON.stringify({
+                first_name: firstName,
+                last_name: lastName,
+                email: email,
+                password: password,  // Optional
+                mobile_num: mobileNum,
+              }),
+            });
+
+            const contentType = response.headers.get('Content-Type');
+            if (contentType && contentType.includes('application/json')) {
+              const data = await response.json();
+              console.log('Response Data:', data);  // Log the response data for debugging
+
+              if (response.ok) {
+                alert('Profile updated successfully!');
+                window.location.href = '/';  // Redirect to home page or profile page
+              } else {
+                alert('Update failed: ' + (data.errors || data.detail || 'Unknown error'));
+              }
+            } else {
+              const text = await response.text();
+              console.error('Non-JSON response received:', text);
+              alert('An error occurred. Please try again.');
+            }
+          } catch (error) {
+            console.error('Error updating profile:', error);
+            alert('An error occurred while updating the profile.');
+          }
         });
 
-        const contentType = response.headers.get('Content-Type');
-        if (contentType && contentType.includes('application/json')) {
-          const data = await response.json();
-          console.log('Response Data:', data);  // Log the response data for debugging
-
-          if (response.ok) {
-            alert('Profile updated successfully!');
-            window.location.href = '/';  // Redirect to home page or profile page
-          } else {
-            alert('Update failed: ' + (data.errors || data.detail || 'Unknown error'));
-          }
-        } else {
-          const text = await response.text(); // Get response as text
-          console.error('Non-JSON response received:', text); // Log the raw HTML error page
-          alert('An error occurred. Please try again.');
+        // Function to extract a specific cookie by name
+        function getCookie(name) {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(';').shift();
+          return null;
         }
-      } catch (error) {
-        console.error('Error updating profile:', error);
-        alert('An error occurred while updating the profile.');
-      }
-    });
-
-    // Function to extract a specific cookie by name
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-      return null;
-    }
 </script>
 
 </body>
