@@ -83,9 +83,9 @@
 
 <script>
     document.getElementById('updateForm').addEventListener('submit', async function(e) {
-          e.preventDefault();  // Prevent form submission
+          e.preventDefault();  // Prevent the form from submitting normally
 
-          console.log('Update function called');  // Debugging line
+          console.log('Update function called');
 
           const firstName = document.getElementById('first_name').value;
           const lastName = document.getElementById('last_name').value;
@@ -100,14 +100,14 @@
             return;
           }
 
-          // Retrieve the session ID from the cookies (this is the default name in Django)
-          const sessionId = getCookie('sessionid');  // <-- Here we get the sessionid cookie
-          if (!sessionId) {
-            alert('Session ID not found.');
+          // Retrieve the Knox token from localStorage or wherever it's stored
+          const knoxToken = localStorage.getItem('knox_token');
+          if (!knoxToken) {
+            alert('Knox token not found.');
             return;
           }
 
-          // Retrieve the user ID from the template (Django Template Variable)
+          // Retrieve the user ID from the template
           const userId = '{{ user.id }}';  // Ensure this is correctly rendered in your Django template
           console.log('User ID:', userId);  // Verify if the user ID is correct
 
@@ -116,15 +116,15 @@
               method: 'PATCH',  // Use PATCH method to update the profile
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Session ${sessionId}`,  // Manually pass the session ID here
-                'X-CSRFToken': csrfToken,  // CSRF token for added security
+                'X-CSRFToken': csrfToken,  // CSRF token added to the request headers
+                'Authorization': `Token ${knoxToken}`,  // Add Knox token in the Authorization header
               },
-              credentials: 'include',  // Ensure session cookies (sessionid, csrftoken) are included in the request
+              credentials: 'include',  // Ensure session cookies (sessionid) are included in the request
               body: JSON.stringify({
                 first_name: firstName,
                 last_name: lastName,
                 email: email,
-                password: password,  // Optional
+                password: password,  // Optional, include if user wants to change password
                 mobile_num: mobileNum,
               }),
             });
@@ -132,11 +132,11 @@
             const contentType = response.headers.get('Content-Type');
             if (contentType && contentType.includes('application/json')) {
               const data = await response.json();
-              console.log('Response Data:', data);  // Log the response data for debugging
+              console.log('Response Data:', data);
 
               if (response.ok) {
                 alert('Profile updated successfully!');
-                window.location.href = '/';  // Redirect to home page or profile page
+                window.location.href = '/';
               } else {
                 alert('Update failed: ' + (data.errors || data.detail || 'Unknown error'));
               }
@@ -158,6 +158,7 @@
           if (parts.length === 2) return parts.pop().split(';').shift();
           return null;
         }
+
 </script>
 
 </body>
