@@ -103,19 +103,19 @@
       console.log('User ID:', userId);  // Verify if the user ID is correct
 
       try {
-        const response = await fetch(`/accounts/api/update/${userId}/`, {  // Fixed URL by adding backticks
-          method: 'PATCH',  // Use PATCH method to update the profile
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token ${token}`,  // Fixed string interpolation syntax
-          },
-          body: JSON.stringify({
-            first_name: firstName,
-            last_name: lastName,
-            email: email,
-            password: password,  // Add password to the body if it's part of the update
-            mobile_num: mobileNum,  // Add mobile number to the body if it's part of the update
-          }),
+        const response = await fetch(`/accounts/api/update/${userId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Token ${token}`,
+            },
+            body: JSON.stringify({
+                first_name: firstName,
+                last_name: lastName,
+                email: email,
+                password: password,
+                mobile_num: mobileNum,
+            }),
         });
 
         const contentType = response.headers.get('Content-Type');
