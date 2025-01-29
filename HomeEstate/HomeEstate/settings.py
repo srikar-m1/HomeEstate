@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'accounts',
     'rest_framework',
     'knox',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +55,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'HomeEstate.urls'
@@ -165,3 +168,19 @@ SECURE_HSTS_SECONDS = 3600  # Enables HTTP Strict Transport Security (HSTS) for 
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
 SECURE_HSTS_PRELOAD = True  # Tell browsers to preload HSTS
 SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent browsers from sniffing content types
+
+CORS_ALLOWED_ORIGINS = [
+    'https://homeestate-fcx0.onrender.com',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+# Ensure the session cookie is only sent over HTTPS
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# Set SameSite policy for CSRF and session cookies to prevent CSRF attacks
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# For secure cookies to work, ensure you're using HTTPS in production
+SECURE_SSL_REDIRECT = True
