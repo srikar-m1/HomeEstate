@@ -83,62 +83,65 @@
 
 <script>
     document.getElementById('updateForm').addEventListener('submit', async function(e) {
-  e.preventDefault();  // Prevent the form from submitting normally
+      e.preventDefault();  // Prevent the form from submitting normally
 
-  console.log('Update function called');  // Debugging line
+      console.log('Update function called');  // Debugging line
 
-  const firstName = document.getElementById('first_name').value;
-  const lastName = document.getElementById('last_name').value;
-  const email = document.getElementById('email').value;
-  const email = document.getElementById('password').value;
-  const email = document.getElementById('mobile_num').value;
+      const firstName = document.getElementById('first_name').value;
+      const lastName = document.getElementById('last_name').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;  // Fixed duplicate variable name
+      const mobileNum = document.getElementById('mobile_num').value;  // Fixed duplicate variable name
 
-  const token = localStorage.getItem('knox_token');
-  if (!token) {
-    alert('You must be logged in to update your profile.');
-    return;
-  }
+      const token = localStorage.getItem('knox_token');
+      if (!token) {
+        alert('You must be logged in to update your profile.');
+        return;
+      }
 
-  const pk = '{{ user.id }}';  // Injecting user ID directly into JavaScript (check if this is rendered correctly)
-  console.log('pk:', userId);  // Verify if the user ID is correct
+      const userId = '{{ user.id }}';  // Injecting user ID directly into JavaScript (check if this is rendered correctly)
+      console.log('User ID:', userId);  // Verify if the user ID is correct
 
-  try {
-    const response = await fetch(`/accounts/api/update/${pk}/`, {
-      method: 'PATCH',  // Use PATCH method to update the profile
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Token ${token}`  // Sending the token in the Authorization header
-      },
-      body: JSON.stringify({
-        first_name: firstName,
-        last_name: lastName,
-        email: email
-      }),
+      try {
+        const response = await fetch(`/accounts/api/update/${userId}/`, {  // Fixed URL by adding backticks
+          method: 'PATCH',  // Use PATCH method to update the profile
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`,  // Fixed string interpolation syntax
+          },
+          body: JSON.stringify({
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+            password: password,  // Add password to the body if it's part of the update
+            mobile_num: mobileNum,  // Add mobile number to the body if it's part of the update
+          }),
+        });
+
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          console.log('Response Data:', data);  // Log the response data for debugging
+
+          if (response.ok) {
+            alert('Profile updated successfully!');
+            window.location.href = '/';  // Redirect to home page or profile page
+          } else {
+            alert('Update failed: ' + (data.errors || data.detail || 'Unknown error'));
+          }
+        } else {
+          const text = await response.text(); // Get response as text
+          console.error('Non-JSON response received:', text); // Log the raw HTML error page
+          alert('An error occurred. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        alert('An error occurred while updating the profile.');
+      }
     });
 
-    const contentType = response.headers.get('Content-Type');
-    if (contentType && contentType.includes('application/json')) {
-      const data = await response.json();
-      console.log('Response Data:', data);  // Log the response data for debugging
+</script>
 
-      if (response.ok) {
-        alert('Profile updated successfully!');
-        window.location.href = '/';  // Redirect to home page or profile page
-      } else {
-        alert('Update failed: ' + (data.errors || data.detail || 'Unknown error'));
-      }
-    } else {
-      const text = await response.text(); // Get response as text
-      console.error('Non-JSON response received:', text); // Log the raw HTML error page
-      alert('An error occurred. Please try again.');
-    }
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    alert('An error occurred while updating the profile.');
-  }
-});
-</script>
-</script>
 
 </body>
 </html>

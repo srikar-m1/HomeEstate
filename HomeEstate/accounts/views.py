@@ -101,7 +101,7 @@ def verify_email(request, uidb64, token):
             user.save()
 
             # Redirect the user to the login page after successful verification
-            return HttpResponseRedirect('/login/?verified=true')
+            return HttpResponseRedirect('email-verified/')
 
         else:
             return HttpResponse("Invalid token.")
@@ -206,4 +206,4 @@ class LogoutAll(knox_views.LogoutAllView):
 
 
 def email_verified_success(request):
-    return render(request, 'email_verified_success.html')  # A simple success page
+    return render(request, 'email_success.html')  # A simple success page

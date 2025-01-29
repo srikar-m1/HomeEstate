@@ -18,7 +18,7 @@ urlpatterns = [
     path('logoutAll/', LogoutAllView.as_view(), name='logout-all-api'),  # POST to logout from all sessions
 
     # User profile update
-    path('api/update/<int:pk>/', views.UpdateUser.as_view(), name='update-user'),
+    path('api/update/<int:userId>/', views.UpdateUser.as_view(), name='update-user'),
     path('update/', views.updateform, name='update-user-form'),  # Update user details
 
     # User details page (show user details)
@@ -26,7 +26,7 @@ urlpatterns = [
 
     path('verify-email/<uidb64>/<token>/', views.verify_email, name='verify_email'),
 
-    # path('email-verified-success/', views.email_verified_success, name='email_verified_success')
+    path('email-verified/', views.email_verified_success, name='email_verified_success')
 
 
 ]
