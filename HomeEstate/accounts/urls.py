@@ -22,7 +22,7 @@ urlpatterns = [
     path('update/', views.updateform, name='update-user-form'),  # Update user details
 
     # User details page (show user details)
-    path('user-details/<int:userId>/', views.user_details, name='user-details'),
+    path('user-details/<int:pk>/', views.user_details, name='user-details'),
 
     path('verify-email/<uidb64>/<token>/', views.verify_email, name='verify_email'),
 

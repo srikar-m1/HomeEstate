@@ -82,63 +82,56 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
-    document.getElementById('updateForm').addEventListener('submit', async function(e) {
-      e.preventDefault();  // Prevent the form from submitting normally
+        document.getElementById('updateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();  // Prevent form submission
 
-      console.log('Update function called');  // Debugging line
+            const firstName = document.getElementById('first_name').value;
+            const lastName = document.getElementById('last_name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const mobileNum = document.getElementById('mobile_num').value;
 
-      const firstName = document.getElementById('first_name').value;
-      const lastName = document.getElementById('last_name').value;
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;  // Fixed duplicate variable name
-      const mobileNum = document.getElementById('mobile_num').value;  // Fixed duplicate variable name
+            const token = localStorage.getItem('knox_token');
+            if (!token) {
+                alert('You must be logged in to update your profile.');
+                return;
+            }
 
-      const token = localStorage.getItem('knox_token');
-      if (!token) {
-        alert('You must be logged in to update your profile.');
-        return;
-      }
+            const userId = '{{ user.id }}';  // This user ID is injected by Django
+            console.log('User ID:', userId);
 
-      const userId = '{{ user.id }}';  // Injecting user ID directly into JavaScript (check if this is rendered correctly)
-      console.log('User ID:', userId);  // Verify if the user ID is correct
+            try {
+                const response = await fetch(`/accounts/api/update/${userId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`,
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,  // Ensure CSRF token is sent
+                    },
+                    body: JSON.stringify({
+                        first_name: firstName,
+                        last_name: lastName,
+                        email: email,
+                        password: password,
+                        mobile_num: mobileNum,
+                    }),
+                });
 
-      try {
-        const response = await fetch(`/accounts/api/update/${userId}/`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Token ${token}`,
-            },
-            body: JSON.stringify({
-                first_name: firstName,
-                last_name: lastName,
-                email: email,
-                password: password,
-                mobile_num: mobileNum,
-            }),
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Error data:', errorData);
+                    alert('Error: ' + (errorData.detail || 'Unknown error occurred.'));
+                } else {
+                    const data = await response.json();
+                    console.log('Success Data:', data);
+                    alert('Profile updated successfully!');
+                    window.location.href = '/';  // Redirect to home or profile page
+                }
+            } catch (error) {
+                console.error('Request failed:', error);
+                alert('Request failed. Please check the console for errors.');
+            }
         });
-
-        const contentType = response.headers.get('Content-Type');
-        if (contentType && contentType.includes('application/json')) {
-          const data = await response.json();
-          console.log('Response Data:', data);  // Log the response data for debugging
-
-          if (response.ok) {
-            alert('Profile updated successfully!');
-            window.location.href = '/';  // Redirect to home page or profile page
-          } else {
-            alert('Update failed: ' + (data.errors || data.detail || 'Unknown error'));
-          }
-        } else {
-          const text = await response.text(); // Get response as text
-          console.error('Non-JSON response received:', text); // Log the raw HTML error page
-          alert('An error occurred. Please try again.');
-        }
-      } catch (error) {
-        console.error('Error updating profile:', error);
-        alert('An error occurred while updating the profile.');
-      }
-    });
 
 </script>
 
