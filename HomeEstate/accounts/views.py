@@ -120,18 +120,27 @@ class UpdateUser(UpdateAPIView):
     serializer_class = UpdateUserSerializer
     permission_classes = (IsAuthenticated,)  # Only authenticated users can update their profile
 
-    def perform_update(self, request, serializer, pk=None):
-        # Save the updated user information
-        user = CustomUser.objects.get(id=pk)
-        if user != request.user:
-            return Response({"detail": "You cannot update another user's profile."}, status=403)
+    def perform_update(self, serializer):
+        # Get the user object based on the URL `pk` or `id`
+        user = self.get_object()
 
-        serializer = UpdateUserSerializer(user, data=request.data, partial=True)
+        # Check if the user is trying to update their own profile
+        if user != self.request.user:
+            return Response({"detail": "You cannot update another user's profile."}, status=status.HTTP_403_FORBIDDEN)
 
-        user = serializer.save()
+        # Save the updated data
+        serializer.save()
 
-        # You can perform additional logic if needed before redirecting
-        return super().perform_update(serializer)
+        # Optionally, return any additional information or custom response
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get_object(self):
+        """
+        Overriding get_object to fetch the user object.
+        This is called automatically by DRF when handling the request.
+        """
+        user = super().get_object()
+        return user
 
     def get_success_url(self):
         # Redirect to the home page after a successful update
