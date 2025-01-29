@@ -1,0 +1,236 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+
+    <!-- Bootstrap 4.5.2 CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Google Fonts for clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- Font Awesome (Optional for icons) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: url("{% static 'images/background.jpg' %}") no-repeat center center fixed; /* Background image from static folder */
+            background-size: cover; /* Ensure the image covers the entire screen */
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 400px;
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background for readability */
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        h2 {
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-control {
+            border-radius: 30px;
+            padding: 12px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            transition: border 0.3s ease;
+        }
+
+        .form-control:focus {
+            border: 2px solid #2575fc;
+            box-shadow: 0px 0px 5px rgba(37, 117, 252, 0.4);
+        }
+
+        button[type="submit"] {
+            border-radius: 30px;
+            padding: 12px 0;
+            background-color: #2575fc;
+            color: white;
+            font-weight: bold;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #6a11cb;
+        }
+
+        .alert {
+            border-radius: 12px;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .alert.fade {
+            opacity: 0;
+        }
+
+        .alert-dismissible .close {
+            color: #fff;
+        }
+
+        .alert-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .alert-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .alert-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .alert-warning {
+            background-color: #ffc107;
+            color: white;
+        }
+
+        .alert .close {
+            font-size: 20px;
+            opacity: 0.8;
+        }
+
+        /* Hover effect for form fields */
+        .form-control:hover {
+            border-color: #2575fc;
+        }
+
+        /* Button effect */
+        button[type="submit"]:active {
+            transform: scale(0.98);
+        }
+
+        /* Link style */
+        .login-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #2575fc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Register</h2>
+
+        <!-- Display alerts if there's any message -->
+        <div id="alert-container">
+            {% if alert_message %}
+                <div class="alert alert-{{ alert_type }} alert-dismissible fade show" role="alert">
+                    {{ alert_message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Registration Form -->
+        <form method="POST" action="{% url 'register-api' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="first_name">First Name:</label>
+                <input type="text" id="first_name" name="first_name" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="last_name">Last Name:</label>
+                <input type="text" id="last_name" name="last_name" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password_confirm">Confirm Password:</label>
+                <input type="password" id="password_confirm" name="password_confirm" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="country_code">Country Code:</label>
+                <input type="text" id="country_code" name="country_code" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="mobile_num">Mobile Number:</label>
+                <input type="text" id="mobile_num" name="mobile_num" class="form-control" required>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+
+        <!-- Link to Login Page -->
+        <a href="{% url 'login' %}" class="login-link">Already have an account? Login</a>
+
+    </div>
+
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const password = document.getElementById('password').value;
+            const passwordConfirm = document.getElementById('password_confirm').value;
+
+            if (password !== passwordConfirm) {
+                event.preventDefault();  // Prevent form submission
+                alert("Passwords do not match!");
+            }
+        });
+    </script>
+    <!-- Alert fade-out after 3 seconds -->
+    <script>
+        {% if alert_message %}
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 3000);
+        {% endif %}
+    </script>
+</body>
+
+</html>

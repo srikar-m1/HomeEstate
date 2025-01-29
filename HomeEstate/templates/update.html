@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Profile</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Arial', sans-serif;
+        }
+        .update-container {
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .update-container h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .update-container button {
+            width: 100%;
+            padding: 10px;
+        }
+        .update-container .form-group label {
+            font-weight: bold;
+        }
+        .update-container .form-group input {
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="update-container">
+        <h2 class="text-center">Update Your Profile</h2>
+
+        <!-- Update Form -->
+        <form id="updateForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="first_name">First Name</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="last_name">Last Name</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">password</label>
+                <input type="password" class="form-control" id="password" name="password" value="{{ user.password }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="mobile_num">mobile no</label>
+                <input type="number" class="form-control" id="mobile_num" name="mobile_num" value="{{ user.mobile_num }}" required>
+            </div>
+
+            <div class="form-group">
+                      <button type="submit" class="btn update-btn">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+document.getElementById('updateForm').addEventListener('submit', async function(e) {
+  e.preventDefault();  // Prevent the form from submitting normally
+
+  console.log('Update function called');  // Debugging line
+
+  const firstName = document.getElementById('first_name').value;
+  const lastName = document.getElementById('last_name').value;
+  const email = document.getElementById('email').value;
+  const email = document.getElementById('password').value;
+  const email = document.getElementById('mobile_num').value;
+
+  const token = localStorage.getItem('knox_token');
+  if (!token) {
+    alert('You must be logged in to update your profile.');
+    return;
+  }
+
+  const userId = '{{ user.id }}';  // Injecting user ID directly into JavaScript (check if this is rendered correctly)
+  console.log('User ID:', userId);  // Verify if the user ID is correct
+
+  try {
+    const response = await fetch(`/accounts/api/update/${userId}/`, {
+      method: 'PATCH',  // Use PATCH method to update the profile
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Token ${token}`  // Sending the token in the Authorization header
+      },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        email: email
+      }),
+    });
+
+    const contentType = response.headers.get('Content-Type');
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+      console.log('Response Data:', data);  // Log the response data for debugging
+
+      if (response.ok) {
+        alert('Profile updated successfully!');
+        window.location.href = '/';  // Redirect to home page or profile page
+      } else {
+        alert('Update failed: ' + (data.errors || data.detail || 'Unknown error'));
+      }
+    } else {
+      const text = await response.text(); // Get response as text
+      console.error('Non-JSON response received:', text); // Log the raw HTML error page
+      alert('An error occurred. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    alert('An error occurred while updating the profile.');
+  }
+});
+</script>
+</body>
+</html>

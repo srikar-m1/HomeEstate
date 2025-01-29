@@ -1,0 +1,89 @@
+<!-- templates/user_details.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details</title>
+
+    <!-- Bootstrap 4 CSS for quick styling -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+            padding-top: 50px;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin-top: 50px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #343a40;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .details p {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .details strong {
+            color: #007bff;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        .text-center {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>User Details</h1>
+        <div class="details">
+            <p><strong>Email:</strong> {{ user.email|default:"No email provided" }}</p>
+            <p><strong>First Name:</strong> {{ user.first_name|default:"No first name provided" }}</p>
+            <p><strong>Last Name:</strong> {{ user.last_name|default:"No last name provided" }}</p>
+            <p><strong>Country Code:</strong> {{ user.country_code|default:"Not available" }}</p>
+            <p><strong>Mobile Number:</strong> {{ user.mobile_num|default:"Not available" }}</p>
+            <p><strong>Account Created:</strong> {{ user.created_at|default:"No date available" }}</p>
+            <p><strong>Account Updated:</strong> {{ user.updated_at|default:"No date available" }}</p>
+            <p><strong>is_active:</strong> {{ user.is_active }}</p>
+            <p><strong>email_verified:</strong> {{ user.email_verified }}</p>
+        </div>
+        <div class="text-center">
+            <a href="{% url 'update-user' pk=user.pk %}" class="btn btn-primary">Update Details</a>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
