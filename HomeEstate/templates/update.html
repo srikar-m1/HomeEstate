@@ -102,6 +102,7 @@
 
           // Retrieve the Knox token from localStorage or wherever it's stored
           const knoxToken = localStorage.getItem('knox_token');
+          console.log(knoxToken);
           if (!knoxToken) {
             alert('Knox token not found.');
             return;
