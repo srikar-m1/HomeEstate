@@ -120,8 +120,14 @@ class UpdateUser(UpdateAPIView):
     serializer_class = UpdateUserSerializer
     permission_classes = (IsAuthenticated,)  # Only authenticated users can update their profile
 
-    def perform_update(self, serializer):
+    def perform_update(self, request, serializer, pk=None):
         # Save the updated user information
+        user = CustomUser.objects.get(id=pk)
+        if user != request.user:
+            return Response({"detail": "You cannot update another user's profile."}, status=403)
+
+        serializer = UpdateUserSerializer(user, data=request.data, partial=True)
+
         user = serializer.save()
 
         # You can perform additional logic if needed before redirecting

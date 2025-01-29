@@ -109,11 +109,11 @@
           }
 
           // Retrieve the user ID from the template
-          const userId = '{{ user.id }}';  // Ensure this is correctly rendered in your Django template
-          console.log('User ID:', userId);  // Verify if the user ID is correct
+          const pk = '{{ user.id }}';  // Ensure this is correctly rendered in your Django template
+          console.log('pk:', userId);  // Verify if the user ID is correct
 
           try {
-            const response = await fetch(`/accounts/api/update/${userId}/`, {
+            const response = await fetch(`/accounts/api/update/${pk}/`, {
               method: 'PATCH',  // Use PATCH method to update the profile
               headers: {
                 'Content-Type': 'application/json',
