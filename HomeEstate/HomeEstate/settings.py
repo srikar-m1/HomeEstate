@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'your-default-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'https://homeestate-fcx0.onrender.com', 'homeestate-fcx0.onrender.com']
 
@@ -149,7 +149,7 @@ REST_KNOX = {
 }
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')  # Default to local if not set
+SITE_URL = os.getenv('SITE_URL')  # Default to local if not set
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
