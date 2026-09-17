@@ -4,13 +4,13 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.conf import settings
 import barcode
 from barcode.writer import ImageWriter
 from io import BytesIO
 from django.core.files import File
-import requests
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
+from urllib.parse import urljoin
 
 
 class UserManager(BaseUserManager):
@@ -38,7 +38,7 @@ class UserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser):
     email = models.EmailField(max_length=300, unique=True)
-    password = models.CharField(max_length=130, null=False)
+    password = models.CharField(max_length=130, null=True)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -71,60 +71,19 @@ class CustomUser(AbstractBaseUser):
         return True
 
 
-def shorten_url_with_tinyurl(long_url):
-    api_url = f"http://tinyurl.com/api-create.php?url={long_url}"
-
-    try:
-        # Send a GET request to the TinyURL API
-        response = requests.get(api_url)
-
-        # Raise an exception if the request was unsuccessful (non-2xx status)
-        response.raise_for_status()
-
-        # Return the shortened URL
-        return response.text.strip()
-
-    except requests.exceptions.RequestException as e:
-        print(f"Error shortening URL: {e}")
-        return None
-
-
 @receiver(post_save, sender=CustomUser)
 def generate_barcode(sender, instance, created, **kwargs):
-    """
-    This signal is triggered after a user is saved. It generates a barcode based on the user's ID,
-    which contains the shortened URL to the user's details page.
-    """
-    if created:  # Only generate barcode when a new user is created
-        # Generate the full URL to the user's details page
-        long_url = reverse('user-details', args=[instance.id])  # Fully qualified URL to user details page
-        domain = settings.SITE_URL  # e.g., 'http://localhost:8000' or 'https://yourdomain.com'
-        long_url = domain + long_url  # Full URL
+    if not created:
+        return
 
-        # Shorten the URL using TinyURL
-        short_url = shorten_url_with_tinyurl(long_url)
-
-        # Generate the barcode from the shortened URL
-        Code128 = barcode.get_barcode_class('code128')
-
-        # Define barcode writer with smaller scaling factors to make it "shorter"
-        writer = ImageWriter()
-        writer.set_options({
-            'module_width': 0.2,  # Adjust the width of each module to reduce the barcode size
-            'module_height': 10,  # Set the height to be smaller
-            'quiet_zone': 6,  # Quiet zone around the barcode to avoid errors
-            'font_size': 8,  # Smaller font size for text (if any)
-            'text_distance': 5  # Distance of text from the barcode
-        })
-
-        # Create the barcode image using the shortened URL
-        code128 = Code128(short_url, writer=writer)  # Use the shortened URL in the barcode
-        buffer = BytesIO()
-        code128.write(buffer)
-
-        # Save the barcode as an image file
-        filename = f'barcode_{instance.email}.png'
-        instance.barcode.save(filename, File(buffer), save=False)  # Save the barcode image
-
-        # Save the instance again with the barcode attached
-        instance.save()  # This will save the instance with the barcode (avoiding recursion)
+    profile_path = reverse('user-details', args=[instance.id])
+    profile_url = urljoin(f"{settings.SITE_URL.rstrip('/')}/", profile_path.lstrip('/'))
+    code128 = barcode.get_barcode_class('code128')(profile_url, writer=ImageWriter())
+    buffer = BytesIO()
+    code128.write(buffer)
+    instance.barcode.save(
+        f'barcode_{instance.pk}.png',
+        File(buffer),
+        save=False,
+    )
+    instance.save(update_fields=['barcode'])

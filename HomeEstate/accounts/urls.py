@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-from knox.views import LogoutAllView  # Import Knox's LogoutAllView
 
 urlpatterns = [
     # Registration page and API endpoint for registration
@@ -15,7 +14,7 @@ urlpatterns = [
     path('api/logout/', views.CustomLogoutView.as_view(), name='logout-api'),  # POST to logout with token
 
     # Logout from all sessions (invalidate all tokens) using Knox
-    path('logoutAll/', LogoutAllView.as_view(), name='logout-all-api'),  # POST to logout from all sessions
+    path('logoutAll/', views.LogoutAll.as_view(), name='logout-all-api'),
 
     # User profile update
     path('api/update/<int:pk>/', views.UpdateUser.as_view(), name='update-user'),

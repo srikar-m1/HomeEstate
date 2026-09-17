@@ -22,12 +22,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'your-default-secret-key')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'development-only-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv('DJANGO_DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'https://homeestate-fcx0.onrender.com', 'homeestate-fcx0.onrender.com']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv(
+        'DJANGO_ALLOWED_HOSTS',
+        'localhost,127.0.0.1,homeestate-fcx0.onrender.com',
+    ).split(',')
+    if host.strip()
+]
 
 # Application definition
 
@@ -42,12 +49,14 @@ INSTALLED_APPS = [
     'website',
     'accounts',
     'rest_framework',
+    'drf_spectacular',
     'knox',
     'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -55,8 +64,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'HomeEstate.urls'
@@ -84,7 +91,10 @@ WSGI_APPLICATION = 'HomeEstate.wsgi.application'
 
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+        conn_max_age=600,
+    )
 }
 
 
@@ -140,6 +150,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES' : ('knox.auth.TokenAuthentication',
                                         'rest_framework.authentication.SessionAuthentication',),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'HomeEstate API',
+    'DESCRIPTION': 'Property discovery, favorites, and inquiry APIs.',
+    'VERSION': '1.0.0',
 }
 
 REST_KNOX = {
@@ -149,13 +168,15 @@ REST_KNOX = {
 }
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-SITE_URL = os.getenv('SITE_URL')  # Default to local if not set
+SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
 
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = os.getenv(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend',
+)
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465  # Use port 587 for TLS, or 25 for non-secure
-EMAIL_USE_SSL = True  # Set to False if you don't want TLS/SSL
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
 
 # Fetch these values from environment variables for security
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # Set in Render (e.g., 'homeestate001@gmail.com')
@@ -163,21 +184,46 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # Set in Render (Your Gm
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# Security settings for production (redirect HTTP to HTTPS)
-SECURE_SSL_REDIRECT = True  # Redirect HTTP to HTTPS
-SECURE_HSTS_SECONDS = 3600  # Enables HTTP Strict Transport Security (HSTS) for 1 hour
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to all subdomains
-SECURE_HSTS_PRELOAD = True  # Tell browsers to preload HSTS
-SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent browsers from sniffing content types
+REDIS_URL = os.getenv('REDIS_URL')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'homeestate-local',
+        }
+    }
+
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', REDIS_URL or 'memory://')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', REDIS_URL or 'cache+memory://')
+CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', 'False').lower() == 'true'
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+if not DEBUG:
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
+    SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '3600'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 CORS_ALLOWED_ORIGINS = [
-    'https://homeestate-fcx0.onrender.com',
+    origin.strip()
+    for origin in os.getenv(
+        'CORS_ALLOWED_ORIGINS',
+        'https://homeestate-fcx0.onrender.com',
+    ).split(',')
+    if origin.strip()
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 # Ensure the session cookie is only sent over HTTPS
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 # Set SameSite policy for CSRF and session cookies to prevent CSRF attacks
 CSRF_COOKIE_SAMESITE = 'Lax'

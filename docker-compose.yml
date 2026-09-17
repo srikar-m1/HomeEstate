@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: homeestate
+      POSTGRES_USER: homeestate
+      POSTGRES_PASSWORD: homeestate
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+
+  web:
+    build: .
+    command: sh -c "python manage.py migrate && gunicorn HomeEstate.wsgi:application --bind 0.0.0.0:8000"
+    env_file: .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build: .
+    command: celery -A HomeEstate worker --loglevel=info
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:

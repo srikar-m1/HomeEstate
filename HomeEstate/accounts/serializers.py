@@ -13,17 +13,26 @@ class UserSerializer(serializers.ModelSerializer):
 class CreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = '__all__'
+        fields = (
+            'id',
+            'email',
+            'password',
+            'first_name',
+            'last_name',
+            'country_code',
+            'mobile_num',
+        )
         extra_kwargs = {
-            'password': {'required': True},
+            'password': {'required': True, 'write_only': True},
             'country_code': {'required': True},
             'mobile_num': {'required': True},
         }
 
     def validate(self, attrs):
-        email = attrs.get('email',).strip().lower()
+        email = attrs.get('email', '').strip().lower()
         if CustomUser.objects.filter(email=email).exists():
             raise serializers.ValidationError('User already exists.')
+        attrs['email'] = email
         return attrs
 
     def create(self, validated_data):

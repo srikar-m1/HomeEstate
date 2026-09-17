@@ -16,6 +16,7 @@ from knox.models import AuthToken
 from .models import CustomUser
 from .serializers import CreateUserSerializer, UpdateUserSerializer, LoginSerializer
 from django.urls import reverse
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
 # View to render the registration page (GET request)
@@ -199,6 +200,7 @@ def user_details(request, user_id):
 
 
 # User logout view (invalidate current token)
+@extend_schema_view(post=extend_schema(request=None, responses={302: None}))
 class CustomLogoutView(knox_views.LogoutView):
     permission_classes = [IsAuthenticated]  # Only authenticated users can logout
 
@@ -210,6 +212,7 @@ class CustomLogoutView(knox_views.LogoutView):
 
 
 # User logout all view using Knox (invalidate all tokens)
+@extend_schema_view(post=extend_schema(request=None, responses={204: None}))
 class LogoutAll(knox_views.LogoutAllView):
     permission_classes = (IsAuthenticated,)
 
